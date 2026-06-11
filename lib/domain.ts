@@ -9,6 +9,8 @@ export type Judgement = "是" | "不是" | "不确定" | "无关" | "猜对了";
 
 export const JUDGEMENTS: Judgement[] = ["是", "不是", "不确定", "无关", "猜对了"];
 
+export type SolveMode = "guess" | "reveal";
+
 export const AVATAR_OPTIONS = [
   "🧑‍🎓",
   "👩‍🎓",
@@ -64,6 +66,7 @@ export type SolvedHistoryItem = {
   questionCount: number;
   solvedBy: PlayerIdentity;
   solvedAt: string;
+  solveMode?: SolveMode;
 };
 
 export type GameSummary = {

@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
-import { generateHistoricalPerson, judgeQuestion } from "./ai";
+import { generateHistoricalPerson, isRevealRequest, judgeQuestion } from "./ai";
 import {
   isValidIdentity,
   normalizePersonName,
@@ -164,9 +164,43 @@ export async function submitQuestion(input: {
       currentRound = await createRound(database);
     }
 
-    const judgement = await judgeQuestion(currentRound.hiddenPerson, question);
     const now = new Date().toISOString();
     const sequence = currentRound.questionCount + 1;
+
+    if (isRevealRequest(question)) {
+      currentRound.status = "solved";
+      currentRound.solvedBy = {
+        avatar: input.player.avatar,
+        nickname: input.player.nickname.trim()
+      };
+      currentRound.solvedAt = now;
+
+      const normalized = normalizePersonName(currentRound.hiddenPerson);
+      const exists = database.solvedHistory.some(
+        (item) => normalizePersonName(item.personName) === normalized
+      );
+
+      if (!exists) {
+        database.solvedHistory.push({
+          id: createId("solved"),
+          roundId: currentRound.id,
+          personName: currentRound.hiddenPerson,
+          questionCount: currentRound.questionCount,
+          solvedBy: {
+            avatar: input.player.avatar,
+            nickname: input.player.nickname.trim()
+          },
+          solvedAt: now,
+          solveMode: "reveal"
+        });
+      }
+
+      await createRound(database);
+      await writeDatabase(database);
+      return buildState(database);
+    }
+
+    const judgement = await judgeQuestion(currentRound.hiddenPerson, question);
 
     const entry: QuestionEntry = {
       id: createId("question"),
@@ -202,7 +236,8 @@ export async function submitQuestion(input: {
           personName: currentRound.hiddenPerson,
           questionCount: currentRound.questionCount,
           solvedBy: entry.player,
-          solvedAt: now
+          solvedAt: now,
+          solveMode: "guess"
         });
       }
     }

@@ -121,6 +121,8 @@ function EntryModal({
 }
 
 function HistoryModal({ history, onClose }: { history: HistoryState; onClose: () => void }) {
+  const solvedLabel = history.historyItem.solveMode === "reveal" ? "揭晓" : "猜出";
+
   return (
     <div className="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="history-title">
       <section className="modal scrollModal">
@@ -128,7 +130,8 @@ function HistoryModal({ history, onClose }: { history: HistoryState; onClose: ()
         <h2 id="history-title">{history.historyItem.personName}</h2>
         <p className="muted">
           共提问 {history.historyItem.questionCount} 次，由 {history.historyItem.solvedBy.avatar}{" "}
-          {history.historyItem.solvedBy.nickname} 猜出。
+          {history.historyItem.solvedBy.nickname}
+          {solvedLabel}。
         </p>
         <Timeline entries={history.timeline} compact />
         <button className="sealButton wide" type="button" onClick={onClose}>
@@ -154,17 +157,22 @@ function ResultModal({
 }) {
   const isSolver =
     identity?.avatar === result.solvedBy.avatar && identity?.nickname === result.solvedBy.nickname;
+  const isReveal = result.solveMode === "reveal";
 
   return (
     <div className="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="result-title">
       <section className="modal resultModal">
         <p className="eyebrow">揭榜</p>
-        <h2 id="result-title">{isSolver ? "你猜对了！" : `${result.solvedBy.nickname} 猜对了！`}</h2>
+        <h2 id="result-title">
+          {isReveal ? "已为你揭晓答案！" : isSolver ? "你猜对了！" : `${result.solvedBy.nickname} 猜对了！`}
+        </h2>
         <p className="answerName">答案是 {result.personName}</p>
-        <p className="muted">本题共用了 {result.questionCount} 次提问。</p>
+        <p className="muted">
+          {isReveal ? "系统已为你直接揭晓，并开启新一题。" : `本题共用了 ${result.questionCount} 次提问。`}
+        </p>
         <div className="modalActions">
           <button className="sealButton" type="button" disabled={loading} onClick={onNext}>
-            {loading ? "开新题中..." : "再猜一个"}
+            {loading ? "开新题中..." : isReveal ? "继续猜下一题" : "再猜一个"}
           </button>
           <button className="paperButton" type="button" onClick={onHome}>
             返回主页
