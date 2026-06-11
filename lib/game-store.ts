@@ -24,8 +24,11 @@ type Database = {
   solvedHistory: SolvedHistoryItem[];
 };
 
-const dataDir = path.join(process.cwd(), "data");
-const dbPath = path.join(dataDir, "game-db.json");
+const configuredDbPath = process.env.GAME_DB_PATH?.trim();
+const dbPath = configuredDbPath
+  ? path.resolve(configuredDbPath)
+  : path.join(process.env.GAME_DATA_DIR ? path.resolve(process.env.GAME_DATA_DIR) : path.join(process.cwd(), "data"), "game-db.json");
+const dataDir = path.dirname(dbPath);
 
 let writeQueue = Promise.resolve();
 

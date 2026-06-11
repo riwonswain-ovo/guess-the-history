@@ -55,6 +55,24 @@ const relatedQuestionHints = [
   "朝代",
   "年代",
   "时期",
+  "秦朝",
+  "汉朝",
+  "三国",
+  "魏晋",
+  "晋朝",
+  "南北朝",
+  "隋朝",
+  "唐朝",
+  "宋朝",
+  "元朝",
+  "明朝",
+  "清朝",
+  "秦代",
+  "汉代",
+  "唐代",
+  "宋代",
+  "明代",
+  "清代",
   "性别",
   "身份",
   "职业",
@@ -193,7 +211,17 @@ export async function judgeQuestion(hiddenPerson: string, question: string): Pro
   try {
     // DeepSeek 这类模型会先用一部分 token 做推理；token 太少时会只返回 reasoning，
     // 导致 content 为空，最后被规范化成「不确定」。
-    const judgement = normalizeJudgement(await callOpenAI(prompt, 64));
+    const rawJudgement = await callOpenAI(prompt, 64);
+
+    if (!rawJudgement) {
+      if (question.includes(hiddenPerson)) {
+        return "猜对了";
+      }
+
+      return "不确定";
+    }
+
+    const judgement = normalizeJudgement(rawJudgement);
 
     if (judgement === "无关" && isRelatedGuessQuestion(question)) {
       return "不确定";
