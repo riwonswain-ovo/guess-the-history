@@ -16,20 +16,21 @@ const fallbackPeople = [
 ];
 
 async function callOpenAI(prompt: string, maxTokens = 40) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.DEEPSEEK_API_KEY ?? process.env.OPENAI_API_KEY;
+  const baseUrl = process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
 
   if (!apiKey) {
     return null;
   }
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
+      model: process.env.DEEPSEEK_MODEL ?? "deepseek-v4-flash",
       messages: [
         {
           role: "system",
@@ -46,7 +47,7 @@ async function callOpenAI(prompt: string, maxTokens = 40) {
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI request failed: ${response.status}`);
+    throw new Error(`DeepSeek request failed: ${response.status}`);
   }
 
   const payload = (await response.json()) as {
