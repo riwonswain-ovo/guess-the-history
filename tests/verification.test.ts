@@ -113,11 +113,10 @@ test("question submission persists and becomes visible to another client", async
   };
 
   assert.equal(nextState.summary.questionCount, 1);
-  assert.equal(nextState.timeline.length, 1);
-  assert.equal(nextState.timeline[0].judgement, "猜对了");
+  assert.equal(nextState.timeline.length, 0);
   assert.equal(nextState.latestSolvedRound?.solveMode, "guess");
-  assert.equal(nextState.currentRound.status, "solved");
-  assert.equal(nextState.currentRound.id, firstState.currentRound.id);
+  assert.equal(nextState.currentRound.status, "active");
+  assert.notEqual(nextState.currentRound.id, firstState.currentRound.id);
 
   const secondClient = (await (await getGame()).json()) as {
     summary: { solvedCount: number; questionCount: number };

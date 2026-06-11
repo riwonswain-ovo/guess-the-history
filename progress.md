@@ -23,7 +23,7 @@
 - 已启动开发服务器：
   - `http://127.0.0.1:3000`
 - 已完成当前一轮代码落盘：
-  - 本地文件持久化层：游戏回合、问答记录、已猜出历史。
+  - 双后端持久化层：默认 Supabase/Postgres，本地测试仍可用文件回退。
   - 服务端 API：读取状态、提交问题、创建下一题、读取历史问答。
   - AI 判定与生成人物接入，已切换到 DeepSeek 兼容接口，并对 AI 判定做五选一规范化。
   - 轮询式同步兜底，支持刷新和重连后从持久化状态恢复。
@@ -34,6 +34,11 @@
 - 已补充自动化验证：
   - `npm test`
   - 覆盖无效身份拦截、问答提交流程、猜对后广播、直接揭晓、下一回合幂等和提示生成兜底
+- 已加入 Supabase 迁移与部署准备：
+  - `supabase/migrations/20260611190000_init.sql`
+  - `.env.example`
+  - `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`
+  - 已应用到 Supabase 项目 `txotvmxktxvmsvwzxdfr`
 - 已完成基础 API 验证：
   - `GET /api/game`
   - `POST /api/questions`
@@ -44,26 +49,26 @@
   - 支持识别“答案是什么 / 我不猜了”这类直接揭晓请求，并自动开启新回合
   - 支持识别“给点提示 / 有什么线索”这类请求，生成不泄露答案且尽量不重复的人物提示
   - 人物提示作为独立时间线条目持久化，刷新和其他客户端轮询后仍可看到
-- 已确认当前本地开发数据会写入 `data/game-db.json`，并已加入 `.gitignore`。
-- 已为测试新增 `GAME_DB_PATH` 覆盖入口，避免污染本地开发数据。
+- 已保留本地文件回退用于测试与离线开发，并为测试新增 `GAME_DB_PATH` 覆盖入口，避免污染本地开发数据。
 - 已将 OpenSpec `tasks.md` 同步到真实进度：
   - 1.1 - 10.9 已勾选完成
 
 ## 当前状态
 
 - 项目现在是一个可运行的 Next.js 多人共享猜历史人物应用。
-- 当前使用 `data/game-db.json` 作为本地开发数据库文件，已加入 `.gitignore`，不会提交；测试会临时改用 `GAME_DB_PATH`。
+- 生产默认走 Supabase/Postgres；测试和离线开发可临时回退到 `data/game-db.json`，测试会改用 `GAME_DB_PATH`。
+- Supabase 项目已创建 3 张表：`game_rounds`、`game_questions`、`game_solved_history`，当前为空库。
 - 实时同步采用轮询兜底，每 2.5 秒重新拉取持久化状态。
 - OpenSpec change 的 `tasks.md` 已完成同步，所有任务已勾选完成。
-- 当前代码已落盘，视觉/UI 验证和多客户端复核已补进自动化测试。
+- 当前代码已落盘，验证已补进自动化测试，并新增 Supabase 迁移文件，适合接入 Vercel 部署。
 - `.env.local` 现在使用 `DEEPSEEK_API_KEY`，不是 `OPENAI_API_KEY`。
 
 ## 下一步任务
 
-1. 归档 OpenSpec change `build-v3-realtime-history-guessing-game`。
-2. 如果要上线生产环境，把 `data/game-db.json` 替换为真正的托管数据库。
-3. 如果 AI 模型或接口策略变化，可通过 `DEEPSEEK_MODEL` 环境变量调整。
-4. 如需进一步回归，再补充真实浏览器人工验收。
+1. 从 Supabase 控制台复制 service role key。
+2. 在 Vercel 配置 `SUPABASE_URL=https://txotvmxktxvmsvwzxdfr.supabase.co` 和 `SUPABASE_SERVICE_ROLE_KEY`。
+3. 把 Vercel 的 `DEEPSEEK_API_KEY` 一起配置后部署。
+4. 如果 AI 模型或接口策略变化，可通过 `DEEPSEEK_MODEL` 环境变量调整。
 
 ## 备注
 
