@@ -60,6 +60,7 @@ create index if not exists game_solved_history_solved_at_idx
 create or replace function public.game_ensure_active_round(hidden_person text)
 returns boolean
 language plpgsql
+security definer
 set search_path = public, pg_temp
 as $$
 declare
@@ -103,6 +104,7 @@ create or replace function public.game_submit_question(
 )
 returns void
 language plpgsql
+security definer
 set search_path = public, pg_temp
 as $$
 declare
