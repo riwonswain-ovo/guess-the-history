@@ -347,6 +347,26 @@ p {
   color: #c45117;
 }
 
+.hintReply {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  color: #76591f;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.hintReply span {
+  flex: 0 0 auto;
+  border: 1px solid rgba(138, 105, 48, 0.35);
+  border-radius: 999px;
+  padding: 0 8px;
+  color: #8a6930;
+  font-size: 12px;
+  line-height: 24px;
+}
+
 .inputDock {
   position: fixed;
   right: 0;

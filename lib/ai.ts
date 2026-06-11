@@ -32,6 +32,25 @@ const revealHints = [
   "说出答案"
 ];
 
+const requestHintHints = [
+  "给点提示",
+  "给个提示",
+  "提示一下",
+  "来点提示",
+  "有什么提示",
+  "需要提示",
+  "想要提示",
+  "给点线索",
+  "给个线索",
+  "来点线索",
+  "有什么线索",
+  "提供线索",
+  "猜不出来",
+  "猜不到",
+  "提示",
+  "线索"
+];
+
 const relatedQuestionHints = [
   "朝代",
   "年代",
@@ -108,6 +127,11 @@ export function isRevealRequest(question: string) {
   return revealHints.some((hint) => compact.includes(hint));
 }
 
+export function isHintRequest(question: string) {
+  const compact = question.replace(/\s+/g, "");
+  return requestHintHints.some((hint) => compact.includes(hint));
+}
+
 export function isRelatedGuessQuestion(question: string) {
   const compact = question.replace(/\s+/g, "");
   return relatedQuestionHints.some((hint) => compact.includes(hint));
@@ -122,6 +146,32 @@ export function normalizeJudgement(value: string | null | undefined): Judgement 
 
   const matched = JUDGEMENTS.find((judgement) => cleaned.includes(judgement));
   return matched ?? "不确定";
+}
+
+export async function generateHint(hiddenPerson: string, previousHints: string[]): Promise<string> {
+  const prompt = [
+    `隐藏答案是中国古代历史人物「${hiddenPerson}」。`,
+    "请为猜谜玩家提供一条简短、有效、由浅入深的中文提示。",
+    "提示可以涉及人物所处时代、身份、主要成就、代表作品或重要经历。",
+    "绝对不要出现人物姓名、字、号、别名，也不要直接暴露答案。",
+    "只输出一条提示，不要加“提示：”前缀，控制在 15 到 50 个汉字。",
+    previousHints.length > 0
+      ? `不要重复这些已经给过的提示：${previousHints.join("；")}`
+      : "当前还没有给过提示。"
+  ].join("\n");
+
+  try {
+    const generated = (await callOpenAI(prompt, 320))?.replace(/\s+/g, " ").trim() ?? "";
+    const safeHint = generated.replaceAll(hiddenPerson, "这位人物").slice(0, 100);
+
+    if (safeHint) {
+      return safeHint;
+    }
+  } catch {
+    // AI 不可用时仍返回不泄露答案的通用线索。
+  }
+
+  return "这位人物在中国古代史上颇具影响，可以从其所处时代和主要成就入手。";
 }
 
 export async function judgeQuestion(hiddenPerson: string, question: string): Promise<Judgement> {

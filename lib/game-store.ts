@@ -1,6 +1,12 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
-import { generateHistoricalPerson, isRevealRequest, judgeQuestion } from "./ai";
+import {
+  generateHint,
+  generateHistoricalPerson,
+  isHintRequest,
+  isRevealRequest,
+  judgeQuestion
+} from "./ai";
 import {
   isValidIdentity,
   normalizePersonName,
@@ -196,6 +202,32 @@ export async function submitQuestion(input: {
       }
 
       await createRound(database);
+      await writeDatabase(database);
+      return buildState(database);
+    }
+
+    if (isHintRequest(question)) {
+      const previousHints = database.questions.flatMap((entry) =>
+        entry.roundId === currentRound.id && entry.responseType === "hint" ? [entry.hint] : []
+      );
+      const hint = await generateHint(currentRound.hiddenPerson, previousHints);
+
+      database.questions.push({
+        id: createId("question"),
+        roundId: currentRound.id,
+        sequence,
+        question,
+        player: {
+          avatar: input.player.avatar,
+          nickname: input.player.nickname.trim()
+        },
+        responseType: "hint",
+        hint,
+        createdAt: now
+      });
+      currentRound.questionCount = sequence;
+      currentRound.updatedAt = now;
+
       await writeDatabase(database);
       return buildState(database);
     }

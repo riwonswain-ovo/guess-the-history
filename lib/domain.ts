@@ -38,15 +38,26 @@ export const AVATAR_OPTIONS = [
   "🦌"
 ];
 
-export type QuestionEntry = {
+type QuestionEntryBase = {
   id: string;
   roundId: string;
   sequence: number;
   question: string;
   player: PlayerIdentity;
-  judgement: Judgement;
   createdAt: string;
 };
+
+export type QuestionEntry =
+  | (QuestionEntryBase & {
+      responseType?: "judgement";
+      judgement: Judgement;
+      hint?: never;
+    })
+  | (QuestionEntryBase & {
+      responseType: "hint";
+      hint: string;
+      judgement?: never;
+    });
 
 export type GameRound = {
   id: string;

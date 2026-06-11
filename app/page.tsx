@@ -54,7 +54,14 @@ function Timeline({ entries, compact = false }: { entries: QuestionEntry[]; comp
                 {entry.player.avatar} {entry.player.nickname}
               </span>
             </div>
-            <p className={`judgement ${judgementClass[entry.judgement]}`}>{entry.judgement}</p>
+            {entry.responseType === "hint" ? (
+              <p className="hintReply">
+                <span>提示</span>
+                {entry.hint}
+              </p>
+            ) : (
+              <p className={`judgement ${judgementClass[entry.judgement]}`}>{entry.judgement}</p>
+            )}
           </li>
         ))}
     </ol>
@@ -428,7 +435,7 @@ export default function HomePage() {
                     void submitQuestion();
                   }
                 }}
-                placeholder="是某个朝代/身份/性别/功绩...吗？"
+                placeholder="询问朝代/身份，或输入“给点提示”"
               />
               <button className="sealButton" type="button" disabled={!canSubmit} onClick={() => void submitQuestion()}>
                 发送
