@@ -309,7 +309,13 @@ async function generateNextPerson(snapshot: Database, currentHiddenPerson: strin
 
 async function getGameStateFromSupabase(): Promise<GameState> {
   await createSupabaseRoundIfNeeded();
-  return buildState(await readSupabaseDatabase());
+  const database = await readSupabaseDatabase();
+
+  if (database.rounds.length === 0) {
+    throw new Error("Supabase 密钥无法读取游戏数据，请在 Vercel 使用 sb_secret_... 或 service_role key");
+  }
+
+  return buildState(database);
 }
 
 export async function getGameState(): Promise<GameState> {
@@ -343,7 +349,13 @@ export async function createNextRound(): Promise<GameState> {
     }
 
     await createSupabaseRoundIfNeeded();
-    return buildState(await readSupabaseDatabase());
+    const database = await readSupabaseDatabase();
+
+    if (database.rounds.length === 0) {
+      throw new Error("Supabase 密钥无法读取游戏数据，请在 Vercel 使用 sb_secret_... 或 service_role key");
+    }
+
+    return buildState(database);
   });
 }
 
